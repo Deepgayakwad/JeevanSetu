@@ -17,6 +17,9 @@ const io = new Server(server, {
 app.use(cors());
 app.use(express.json());
 
+// Routes
+app.use("/api/auth", require("./routes/authRoutes"));
+
 // Test route
 app.get("/", (req, res) => {
   res.json({ message: "JeevanSetu API is running!" });
