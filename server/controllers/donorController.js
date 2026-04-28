@@ -1,12 +1,6 @@
 const DonorProfile = require("../models/DonorProfile");
-const cloudinary = require("cloudinary").v2;
-
-// Configure cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUD_NAME,
-  api_key: process.env.API_KEY,
-  api_secret: process.env.API_SECRET,
-});
+const generateDonorCard = require("../utils/generateDonorCard");
+const { uploadToCloudinary } = require("../middleware/uploadMiddleware");
 
 // @route POST /api/donor/profile
 // @desc Create donor profile
@@ -20,10 +14,10 @@ const createDonorProfile = async (req, res) => {
       return res.status(400).json({ message: "Donor profile already exists" });
     }
 
-    // Upload medical report if provided
+    // Upload medical report to Cloudinary if provided
     let medicalReportUrl = "";
     if (req.file) {
-      const result = await cloudinary.uploader.upload(req.file.path, {
+      const result = await uploadToCloudinary(req.file.buffer, {
         folder: "jeevansetu/medical-reports",
         resource_type: "auto",
       });
@@ -124,10 +118,51 @@ const getAllDonors = async (req, res) => {
   }
 };
 
+// @route GET /api/donor/card
+// @desc  Generate (or fetch cached) PDF Donor Card and return Cloudinary URL
+// @access Donor only
+const getDonorCard = async (req, res) => {
+  try {
+    const profile = await DonorProfile.findOne({ user: req.user._id }).populate(
+      "user",
+      "name"
+    );
+
+    if (!profile) {
+      return res.status(404).json({ message: "Donor profile not found. Create your profile first." });
+    }
+
+    // If card already generated, return cached URL
+    if (profile.donorCardUrl) {
+      return res.json({ donorCardUrl: profile.donorCardUrl });
+    }
+
+    // Generate new donor card PDF
+    const cardUrl = await generateDonorCard({
+      name: profile.user.name,
+      bloodGroup: profile.bloodGroup,
+      organs: profile.organs,
+      city: profile.city,
+      state: profile.state,
+      donorId: profile._id.toString(),
+      pledgeDate: profile.pledgeDate || profile.createdAt,
+    });
+
+    // Save URL back to profile
+    profile.donorCardUrl = cardUrl;
+    await profile.save();
+
+    res.json({ donorCardUrl: cardUrl });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createDonorProfile,
   getMyProfile,
   updateDonorProfile,
   searchDonors,
   getAllDonors,
+  getDonorCard,
 };

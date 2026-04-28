@@ -27,6 +27,18 @@ const createRequest = async (req, res) => {
       additionalInfo,
     });
 
+    // 🚨 SOS: Broadcast emergency alert to all admins/hospitals via Socket.io
+    if (urgencyLevel === "critical") {
+      const io = req.app.get("io");
+      if (io) {
+        io.emit("sos:alert", {
+          message: `🚨 CRITICAL ORGAN REQUEST: ${organNeeded} (${bloodGroup}) needed urgently in ${city}, ${state}`,
+          request,
+          requestedBy: req.user._id,
+        });
+      }
+    }
+
     res.status(201).json(request);
   } catch (error) {
     res.status(500).json({ message: error.message });
