@@ -2,7 +2,7 @@
 .navbar {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 9999;
   background: rgba(66, 154, 132, 0.85); /* #429a84 with opacity */
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
