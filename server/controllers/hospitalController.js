@@ -10,7 +10,7 @@ const verifyDonor = async (req, res) => {
   try {
     const donorProfile = await DonorProfile.findByIdAndUpdate(
       req.params.donorProfileId,
-      { isVerified: true },
+      { isVerified: true, verifiedByHospital: req.user._id },
       { new: true }
     ).populate("user", "name email");
 
@@ -35,12 +35,48 @@ const verifyDonor = async (req, res) => {
   }
 };
 
+// @route PATCH /api/hospital/reject/:donorProfileId
+// @desc  Reject a donor profile verification request
+// @access Hospital, Admin
+const rejectDonor = async (req, res) => {
+  try {
+    const donorProfile = await DonorProfile.findByIdAndUpdate(
+      req.params.donorProfileId,
+      { verificationRequestedFrom: null },
+      { new: true }
+    ).populate("user", "name");
+
+    if (!donorProfile) {
+      return res.status(404).json({ message: "Donor profile not found" });
+    }
+
+    // Optional: Notify the donor of rejection
+    const io = req.app.get("io");
+    if (io) {
+      const { createAndEmitNotification } = require("./notificationController");
+      await createAndEmitNotification(io, {
+        userId: donorProfile.user._id,
+        type: "verify",
+        title: "Verification Request Rejected",
+        message: "Your verification request was rejected. Please review your medical report and select another hospital.",
+        relatedId: donorProfile._id,
+      });
+    }
+
+    res.json({ message: "Donor verification rejected", donorProfile });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // @route GET /api/hospital/dashboard
 // @desc  Hospital dashboard stats
 // @access Hospital, Admin
 const getHospitalDashboard = async (req, res) => {
   try {
-    const pendingVerifications = await DonorProfile.find({ isVerified: false })
+    const pendingQuery = { isVerified: false, verificationRequestedFrom: req.user._id };
+    
+    const pendingVerifications = await DonorProfile.find(pendingQuery)
       .populate("user", "name email phone")
       .sort({ createdAt: -1 });
 
@@ -50,8 +86,8 @@ const getHospitalDashboard = async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(10);
 
-    const totalVerified = await DonorProfile.countDocuments({ isVerified: true });
-    const totalPending = await DonorProfile.countDocuments({ isVerified: false });
+    const totalVerified = await DonorProfile.countDocuments({ isVerified: true, verifiedByHospital: req.user._id });
+    const totalPending = await DonorProfile.countDocuments(pendingQuery);
 
     res.json({
       stats: { totalVerified, totalPending },
@@ -119,11 +155,11 @@ const updateTransplantStatus = async (req, res) => {
 };
 
 // @route GET /api/hospital/unverified
-// @desc  Get all unverified donor profiles
+// @desc  Get all unverified donor profiles explicitly requested to this hospital
 // @access Hospital, Admin
 const getUnverifiedDonors = async (req, res) => {
   try {
-    const donors = await DonorProfile.find({ isVerified: false })
+    const donors = await DonorProfile.find({ isVerified: false, verificationRequestedFrom: req.user._id })
       .populate("user", "name email phone profilePic")
       .sort({ createdAt: -1 });
 
@@ -133,9 +169,23 @@ const getUnverifiedDonors = async (req, res) => {
   }
 };
 
+// @route GET /api/hospital/list
+// @desc  Get all hospitals
+// @access Any authenticated user
+const getAllHospitals = async (req, res) => {
+  try {
+    const hospitals = await User.find({ role: "hospital" }).select("name email city state");
+    res.json(hospitals);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   verifyDonor,
+  rejectDonor,
   getHospitalDashboard,
   updateTransplantStatus,
   getUnverifiedDonors,
+  getAllHospitals,
 };

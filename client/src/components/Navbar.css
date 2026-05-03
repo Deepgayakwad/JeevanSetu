@@ -1,0 +1,175 @@
+/* ── Navbar ── */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(66, 154, 132, 0.85); /* #429a84 with opacity */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+}
+
+.navbar-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0.9rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ── Logo ── */
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 1.45rem;
+  font-family: var(--font-display);
+  font-weight: 800;
+  color: #db834d;
+  letter-spacing: -0.02em;
+}
+
+.logo-icon {
+  color: #db834d;
+  fill: #db834d;
+  filter: drop-shadow(0 0 5px rgba(219, 131, 77, 0.4));
+}
+
+.navbar-logo span {
+  color: #db834d;
+  -webkit-text-fill-color: #db834d;
+  background: none;
+}
+
+/* ── Nav Links ── */
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-link {
+  color: #000000;
+  font-weight: 500;
+  padding: 0.45rem 0.75rem;
+  border-radius: 8px;
+  transition: all var(--transition-fast);
+  font-size: 0.92rem;
+}
+
+.nav-link:hover {
+  color: #000000;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: #000000;
+  padding: 0.45rem 0.85rem;
+  border-radius: 8px;
+  transition: all var(--transition-fast);
+  font-size: 0.92rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.nav-item:hover {
+  color: #000000;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* ── User Profile ── */
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-left: 1.25rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.user-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #000000;
+}
+
+/* ── Role Badge ── */
+.badge {
+  font-size: 0.68rem;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+  color: var(--primary);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid rgba(47, 128, 237, 0.25);
+}
+
+/* ── Logout ── */
+.btn-logout {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-logout:hover {
+  color: #ff6b6b;
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* ── Notification Bell ── */
+.notification-btn {
+  position: relative;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-btn:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.notification-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  background: var(--secondary);
+  border-radius: 50%;
+  border: 2px solid transparent;
+}

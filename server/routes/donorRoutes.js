@@ -7,6 +7,9 @@ const {
   searchDonors,
   getAllDonors,
   getDonorCard,
+  getDonorCardById,
+  deleteDonorProfile,
+  requestVerification,
 } = require("../controllers/donorController");
 const { protect, authorizeRoles } = require("../middleware/authMiddleware");
 const { uploadDocument } = require("../middleware/uploadMiddleware");
@@ -23,6 +26,9 @@ router.post(
 // GET    /api/donor/card     — Generate / fetch donor card PDF (must be before /profile)
 router.get("/card", protect, authorizeRoles("donor"), getDonorCard);
 
+// GET    /api/donor/:id/card — Get donor card for a specific donor profile ID
+router.get("/:id/card", protect, getDonorCardById);
+
 // GET    /api/donor/profile  — Get my profile
 router.get("/profile", protect, authorizeRoles("donor"), getMyProfile);
 
@@ -34,6 +40,12 @@ router.put(
   uploadDocument.single("medicalReport"),
   updateDonorProfile
 );
+
+// DELETE /api/donor/profile  — Delete my profile
+router.delete("/profile", protect, authorizeRoles("donor"), deleteDonorProfile);
+
+// PATCH  /api/donor/request-verification/:hospitalId
+router.patch("/request-verification/:hospitalId", protect, authorizeRoles("donor"), requestVerification);
 
 // GET    /api/donor/search   — Search donors
 router.get("/search", protect, searchDonors);

@@ -38,6 +38,16 @@ const donorProfileSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    verificationRequestedFrom: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+    verifiedByHospital: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
     isVerified: {
       type: Boolean,
       default: false,

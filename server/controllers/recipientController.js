@@ -1,4 +1,5 @@
 const RecipientRequest = require("../models/RecipientRequest");
+const DonorProfile = require("../models/DonorProfile");
 
 // @route POST /api/recipient/request
 // @desc Create recipient request
@@ -155,6 +156,32 @@ const deleteRequest = async (req, res) => {
   }
 };
 
+// @route GET /api/recipient/matching-donors
+// @desc Get verified donors matching recipient's open requests
+const getMatchingDonors = async (req, res) => {
+  try {
+    const myRequests = await RecipientRequest.find({ user: req.user._id, status: "waiting" });
+    
+    if (myRequests.length === 0) {
+      return res.json([]);
+    }
+
+    const organsNeeded = myRequests.map(r => r.organNeeded);
+    const bloodGroups = myRequests.map(r => r.bloodGroup);
+
+    const matchingDonors = await DonorProfile.find({
+      isVerified: true,
+      status: "active",
+      organs: { $in: organsNeeded },
+      bloodGroup: { $in: bloodGroups }
+    }).populate("user", "name email phone");
+
+    res.json(matchingDonors);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createRequest,
   getAllRequests,
@@ -162,4 +189,5 @@ module.exports = {
   getRequestById,
   updateRequest,
   deleteRequest,
+  getMatchingDonors,
 };

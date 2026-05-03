@@ -46,7 +46,9 @@ const getMyProfile = async (req, res) => {
   try {
     const profile = await DonorProfile.findOne({
       user: req.user._id,
-    }).populate("user", "name email phone");
+    })
+      .populate("user", "name email phone")
+      .populate("verifiedByHospital", "name");
 
     if (!profile) {
       return res.status(404).json({ message: "Donor profile not found" });
@@ -86,7 +88,8 @@ const searchDonors = async (req, res) => {
   try {
     const { organ, bloodGroup, city, state } = req.query;
 
-    let query = { isVerified: true, status: "active" };
+    // Only return verified donors for recipients
+    let query = { status: "active", isVerified: true };
 
     if (organ) query.organs = { $in: [organ] };
     if (bloodGroup) query.bloodGroup = bloodGroup;
@@ -119,26 +122,23 @@ const getAllDonors = async (req, res) => {
 };
 
 // @route GET /api/donor/card
-// @desc  Generate (or fetch cached) PDF Donor Card and return Cloudinary URL
+// @desc  Generate PDF Donor Card and stream it directly
 // @access Donor only
 const getDonorCard = async (req, res) => {
   try {
-    const profile = await DonorProfile.findOne({ user: req.user._id }).populate(
-      "user",
-      "name"
-    );
+    const profile = await DonorProfile.findOne({ user: req.user._id })
+      .populate("user", "name")
+      .populate("verifiedByHospital", "name");
 
     if (!profile) {
       return res.status(404).json({ message: "Donor profile not found. Create your profile first." });
     }
 
-    // If card already generated, return cached URL
-    if (profile.donorCardUrl) {
-      return res.json({ donorCardUrl: profile.donorCardUrl });
-    }
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename=donor_card_${profile._id}.pdf`);
 
-    // Generate new donor card PDF
-    const cardUrl = await generateDonorCard({
+    // Generate new donor card PDF and pipe to response
+    await generateDonorCard({
       name: profile.user.name,
       bloodGroup: profile.bloodGroup,
       organs: profile.organs,
@@ -146,13 +146,104 @@ const getDonorCard = async (req, res) => {
       state: profile.state,
       donorId: profile._id.toString(),
       pledgeDate: profile.pledgeDate || profile.createdAt,
-    });
+      verifiedByHospitalName: profile.isVerified && profile.verifiedByHospital ? profile.verifiedByHospital.name : null,
+    }, res);
 
-    // Save URL back to profile
-    profile.donorCardUrl = cardUrl;
-    await profile.save();
+  } catch (error) {
+    if (!res.headersSent) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+};
 
-    res.json({ donorCardUrl: cardUrl });
+// @route GET /api/donor/:id/card
+// @desc  Generate donor card for a specific donor profile and stream it
+// @access Any authenticated user
+const getDonorCardById = async (req, res) => {
+  try {
+    const profile = await DonorProfile.findById(req.params.id)
+      .populate("user", "name")
+      .populate("verifiedByHospital", "name");
+
+    if (!profile) {
+      return res.status(404).json({ message: "Donor profile not found." });
+    }
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename=donor_card_${profile._id}.pdf`);
+
+    // Generate new donor card PDF and pipe to response
+    await generateDonorCard({
+      name: profile.user.name,
+      bloodGroup: profile.bloodGroup,
+      organs: profile.organs,
+      city: profile.city,
+      state: profile.state,
+      donorId: profile._id.toString(),
+      pledgeDate: profile.pledgeDate || profile.createdAt,
+      verifiedByHospitalName: profile.isVerified && profile.verifiedByHospital ? profile.verifiedByHospital.name : null,
+    }, res);
+
+  } catch (error) {
+    if (!res.headersSent) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+};
+
+// @route DELETE /api/donor/profile
+// @desc  Delete donor profile (withdraw pledge)
+// @access Donor only
+const deleteDonorProfile = async (req, res) => {
+  try {
+    const profile = await DonorProfile.findOne({ user: req.user._id });
+
+    if (!profile) {
+      return res.status(404).json({ message: "Donor profile not found" });
+    }
+
+    if (profile.isVerified) {
+      return res.status(400).json({ message: "Cannot withdraw pledge after verification. Please contact an admin." });
+    }
+
+    await DonorProfile.deleteOne({ user: req.user._id });
+    res.json({ message: "Donor profile deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @route PATCH /api/donor/request-verification/:hospitalId
+// @desc  Request verification from a specific hospital
+// @access Donor only
+const requestVerification = async (req, res) => {
+  try {
+    const { hospitalId } = req.params;
+    
+    const profile = await DonorProfile.findOneAndUpdate(
+      { user: req.user._id },
+      { verificationRequestedFrom: hospitalId },
+      { new: true }
+    );
+
+    if (!profile) {
+      return res.status(404).json({ message: "Donor profile not found" });
+    }
+
+    // Optional: Notify the hospital via socket
+    const io = req.app.get("io");
+    if (io) {
+      const { createAndEmitNotification } = require("./notificationController");
+      await createAndEmitNotification(io, {
+        userId: hospitalId,
+        type: "verify",
+        title: "New Verification Request",
+        message: `${req.user.name} has requested profile verification.`,
+        relatedId: profile._id,
+      });
+    }
+
+    res.json(profile);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -165,4 +256,7 @@ module.exports = {
   searchDonors,
   getAllDonors,
   getDonorCard,
+  getDonorCardById,
+  deleteDonorProfile,
+  requestVerification,
 };
