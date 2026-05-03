@@ -233,7 +233,7 @@ const Navbar = () => {
           ) : (
             <>
               <Link to="/login" className="nav-link">Login</Link>
-              <Link to="/register" className="btn btn-primary">Register</Link>
+              <Link to="/register" className="nav-link">Register</Link>
             </>
           )}
         </div>
