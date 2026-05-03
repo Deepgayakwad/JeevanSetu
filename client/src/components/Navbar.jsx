@@ -202,9 +202,9 @@ const Navbar = () => {
                           >
                             <span style={{ fontSize: '1.25rem', flexShrink: 0 }}>{typeIcon(notif.type)}</span>
                             <div style={{ flex: 1, minWidth: 0 }}>
-                              <p style={{ fontWeight: notif.isRead ? 400 : 600, fontSize: '0.85rem', marginBottom: '0.2rem' }}>{notif.title}</p>
-                              <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>{notif.message}</p>
-                              <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.3rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                              <p style={{ fontWeight: notif.isRead ? 500 : 700, fontSize: '0.9rem', marginBottom: '0.2rem', color: '#000000' }}>{notif.title}</p>
+                              <p style={{ fontSize: '0.85rem', color: '#333333', lineHeight: 1.4 }}>{notif.message}</p>
+                              <p style={{ fontSize: '0.75rem', color: '#666666', marginTop: '0.3rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                                 <Clock size={11} /> {timeAgo(notif.createdAt)}
                               </p>
                             </div>
