@@ -29,6 +29,11 @@ const verifyDonor = async (req, res) => {
       relatedId: donorProfile._id,
     });
 
+    // Notify all recipients to check for new real-time matches
+    if (io) {
+      io.emit("donor:new_match", donorProfile);
+    }
+
     res.json({ message: "Donor verified successfully", donorProfile });
   } catch (error) {
     res.status(500).json({ message: error.message });

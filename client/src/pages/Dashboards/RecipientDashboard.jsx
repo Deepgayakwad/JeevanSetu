@@ -6,6 +6,9 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import { io } from 'socket.io-client';
+
+const SOCKET_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
 const ORGANS = ['kidney', 'liver', 'cornea', 'heart', 'lungs', 'pancreas'];
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
@@ -116,6 +119,21 @@ const RecipientDashboard = () => {
     init();
   }, []);
 
+  // ── Real-time Socket ──────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!user) return;
+    const socket = io(SOCKET_URL, { transports: ['websocket', 'polling'] });
+    
+    socket.on('donor:new_match', (donorProfile) => {
+      // Re-fetch matched verified donors when a new match is broadcast
+      api.get('/recipient/matching-donors')
+         .then(r => setMatchedVerifiedDonors(r.data))
+         .catch(console.error);
+    });
+
+    return () => socket.disconnect();
+  }, [user]);
+
   // ── Create Request ────────────────────────────────────────────────────────
   const handleFormChange = (e) => setFormData(p => ({ ...p, [e.target.name]: e.target.value }));
 
@@ -218,67 +236,6 @@ const RecipientDashboard = () => {
       </div>
       <div style={{ marginTop: '2rem', display: 'grid', gap: '2rem' }}>
 
-        {/* ── Auto-Matched Verified Donors ── */}
-        {matchedVerifiedDonors.length > 0 && (
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#10b981' }}>
-                <CheckCircle2 size={24} /> Verified Matches For Your Requests
-              </h2>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.25rem' }}>
-              {matchedVerifiedDonors.map(donor => (
-                <div key={donor._id} className="glass-panel" style={{ padding: '1.5rem', position: 'relative', overflow: 'hidden' }}>
-                  <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(90deg, var(--secondary), var(--primary))' }} />
-                  
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                    <div>
-                      <h3 style={{ fontSize: '1.1rem', marginBottom: '0.25rem', color: '#e37c14' }}>{donor.user?.name}</h3>
-                      <p style={{ color: 'green', fontSize: '0.85rem' }}>📍 {donor.city}, {donor.state}</p>
-                    </div>
-                    <span style={{ padding: '0.3rem 0.6rem', backgroundColor: 'var(--secondary-light)', color: 'var(--secondary)', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                      <CheckCircle2 size={12} /> Verified
-                    </span>
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
-                    <div style={{ backgroundColor: 'rgba(255,255,255,0.03)', padding: '0.75rem', borderRadius: '8px' }}>
-                      <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '0.2rem' }}>Blood Group</p>
-                      <p style={{ fontWeight: 700, color: 'red', fontSize: '1.1rem' }}>{donor.bloodGroup}</p>
-                    </div>
-                    <div style={{ backgroundColor: 'var(--bg-main)', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-light)' }}>
-                      <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '0.2rem' }}>Age</p>
-                      <p style={{ fontWeight: 600 }}>{donor.age} yrs</p>
-                    </div>
-                  </div>
-
-                  <div style={{ marginBottom: '1.25rem' }}>
-                    <p style={{ color: '#000000', fontSize: '0.75rem', marginBottom: '0.4rem' }}>Pledged Organs:</p>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-                      {donor.organs?.map(o => (
-                        <span key={o} style={{ backgroundColor: '#e0ad7c', color: '#000000', padding: '0.25rem 0.6rem', borderRadius: '999px', fontSize: '0.75rem', textTransform: 'capitalize', fontWeight: 500 }}>
-                          {o}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button onClick={() => handleMessageDonor(donor.user)} className="btn btn-primary" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem', padding: '0.6rem' }}>
-                      <MessageSquare size={16} /> Contact
-                    </button>
-                    {donor.donorCardUrl && (
-                      <button onClick={() => handleDownloadDonorCard(donor._id, donor.user?.name)} disabled={downloadingCardId === donor._id} className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.6rem 0.75rem' }} title="Download Donor Card">
-                        <Download size={18} />
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* ── My Requests ── */}
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
@@ -334,6 +291,85 @@ const RecipientDashboard = () => {
             </div>
           )}
         </div>
+
+        {/* ── Auto-Matched Verified Donors ── */}
+        {matchedVerifiedDonors.length > 0 ? (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', padding: '1rem', backgroundColor: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '12px' }}>
+              <div>
+                <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#10b981', margin: 0 }}>
+                  <Activity size={24} style={{ animation: 'pulse 2s infinite' }} /> Real-Time Matches Found!
+                </h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.25rem' }}>These donors exactly match your requested organs and blood type.</p>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ position: 'relative', display: 'flex', height: '12px', width: '12px' }}>
+                  <span style={{ animation: 'ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite', position: 'absolute', display: 'inline-flex', height: '100%', width: '100%', borderRadius: '50%', backgroundColor: '#10b981', opacity: 0.75 }}></span>
+                  <span style={{ position: 'relative', display: 'inline-flex', borderRadius: '50%', height: '12px', width: '12px', backgroundColor: '#10b981' }}></span>
+                </span>
+                <span style={{ color: '#10b981', fontWeight: 600, fontSize: '0.85rem' }}>Live Radar Active</span>
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.25rem' }}>
+              {matchedVerifiedDonors.map(donor => (
+                <div key={donor._id} className="glass-panel" style={{ padding: '1.5rem', position: 'relative', overflow: 'hidden' }}>
+                  <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(90deg, var(--secondary), var(--primary))' }} />
+                  
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                    <div>
+                      <h3 style={{ fontSize: '1.1rem', marginBottom: '0.25rem', color: '#e37c14' }}>{donor.user?.name}</h3>
+                      <p style={{ color: 'green', fontSize: '0.85rem' }}>📍 {donor.city}, {donor.state}</p>
+                    </div>
+                    <span style={{ padding: '0.3rem 0.6rem', backgroundColor: 'var(--secondary-light)', color: 'var(--secondary)', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                      <CheckCircle2 size={12} /> Verified
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+                    <div style={{ backgroundColor: 'rgba(255,255,255,0.03)', padding: '0.75rem', borderRadius: '8px' }}>
+                      <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '0.2rem' }}>Blood Group</p>
+                      <p style={{ fontWeight: 700, color: 'red', fontSize: '1.1rem' }}>{donor.bloodGroup}</p>
+                    </div>
+                    <div style={{ backgroundColor: 'var(--bg-main)', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-light)' }}>
+                      <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '0.2rem' }}>Age</p>
+                      <p style={{ fontWeight: 600 }}>{donor.age} yrs</p>
+                    </div>
+                  </div>
+
+                  <div style={{ marginBottom: '1.25rem' }}>
+                    <p style={{ color: '#000000', fontSize: '0.75rem', marginBottom: '0.4rem' }}>Pledged Organs:</p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                      {donor.organs?.map(o => (
+                        <span key={o} style={{ backgroundColor: '#e0ad7c', color: '#000000', padding: '0.25rem 0.6rem', borderRadius: '999px', fontSize: '0.75rem', textTransform: 'capitalize', fontWeight: 500 }}>
+                          {o}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button onClick={() => handleMessageDonor(donor.user)} className="btn btn-primary" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem', padding: '0.6rem' }}>
+                      <MessageSquare size={16} /> Contact
+                    </button>
+                    {donor.donorCardUrl && (
+                      <button onClick={() => handleDownloadDonorCard(donor._id, donor.user?.name)} disabled={downloadingCardId === donor._id} className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.6rem 0.75rem' }} title="Download Donor Card">
+                        <Download size={18} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', padding: '1.5rem', backgroundColor: 'rgba(255, 255, 255, 0.02)', border: '1px dashed var(--border-color)', borderRadius: '12px', textAlign: 'center', flexDirection: 'column' }}>
+              <Activity size={32} color="var(--text-muted)" style={{ opacity: 0.5, marginBottom: '1rem', animation: 'pulse 3s infinite' }} />
+              <h3 style={{ color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Searching for Matches...</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', maxWidth: '400px' }}>Our real-time radar is active. You will be instantly notified here when a donor matching your exact requirements becomes available.</p>
+            </div>
+          </div>
+        )}
 
         {/* ── Available Donors + Search ── */}
         <div>

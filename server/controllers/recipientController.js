@@ -157,7 +157,7 @@ const deleteRequest = async (req, res) => {
 };
 
 // @route GET /api/recipient/matching-donors
-// @desc Get verified donors matching recipient's open requests
+// @desc Get verified donors matching recipient's open requests (strict pair matching)
 const getMatchingDonors = async (req, res) => {
   try {
     const myRequests = await RecipientRequest.find({ user: req.user._id, status: "waiting" });
@@ -166,14 +166,16 @@ const getMatchingDonors = async (req, res) => {
       return res.json([]);
     }
 
-    const organsNeeded = myRequests.map(r => r.organNeeded);
-    const bloodGroups = myRequests.map(r => r.bloodGroup);
+    // Strict pair match: Build an $or array of exact Organ + BloodGroup pairs
+    const matchConditions = myRequests.map(r => ({
+      bloodGroup: r.bloodGroup,
+      organs: r.organNeeded
+    }));
 
     const matchingDonors = await DonorProfile.find({
       isVerified: true,
       status: "active",
-      organs: { $in: organsNeeded },
-      bloodGroup: { $in: bloodGroups }
+      $or: matchConditions
     }).populate("user", "name email phone");
 
     res.json(matchingDonors);
