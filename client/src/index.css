@@ -20,9 +20,9 @@
   --bg-glass:       rgba(255, 255, 255, 0.75);
 
   /* Text */
-  --text-main:      #1C1C1C;
-  --text-muted:     #5A6478;
-  --text-subtle:    #8A93A8;
+  --text-main:      #FFFFFF;
+  --text-muted:     #A0AABF;
+  --text-subtle:    #B0B8C8;
 
   /* Borders & Shadows */
   --border-color:   rgba(47, 128, 237, 0.15);
@@ -49,9 +49,7 @@
 
 body {
   font-family: var(--font-sans);
-  /* Warm peach → salmon → soft pink gradient — matches user reference */
-  background-color: #429a84;
-  background-image: none;
+  background-color: #000000; /* Fallback for DarkVeil */
   background-attachment: fixed;
   color: var(--text-main);
   line-height: 1.6;
@@ -77,10 +75,10 @@ a:hover {
 
 /* ── Glass Panel ── */
 .glass-panel {
-  background: #063a4f;
+  background: #0d2233;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(110, 231, 183, 0.2);
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   color: #ffffff;
@@ -210,10 +208,10 @@ a:hover {
 .input-field {
   width: 100%;
   padding: 0.5rem 0.85rem;
-  background-color: #ffffff;
-  border: 1.5px solid var(--border-light);
+  background-color: #0d2233;
+  border: 1px solid rgba(110, 231, 183, 0.2);
   border-radius: 10px;
-  color: var(--text-main);
+  color: #ffffff;
   font-family: var(--font-sans);
   font-size: 0.85rem;
   transition: all var(--transition-fast);
@@ -282,8 +280,8 @@ select.input-field {
   align-items: center;
   gap: 1rem;
   transition: transform 0.2s, box-shadow 0.2s;
-  background: #063a4f;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: #0d2233;
+  border: 1px solid rgba(110, 231, 183, 0.2);
   border-radius: 16px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
   color: #ffffff;
@@ -365,8 +363,8 @@ select.input-field {
 
 /* ── Section Card ── */
 .section-card {
-  background: #063a4f;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: #0d2233;
+  border: 1px solid rgba(110, 231, 183, 0.2);
   border-radius: 16px;
   padding: 1.75rem;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);

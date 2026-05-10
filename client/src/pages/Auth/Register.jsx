@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Heart, Mail, Lock, User, AlertCircle, Phone } from 'lucide-react';
+import { Heart, Mail, Lock, User, AlertCircle, Phone, Eye, EyeOff } from 'lucide-react';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -11,6 +11,7 @@ const Register = () => {
     phone: '',
     role: 'donor'
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
@@ -155,19 +156,26 @@ const Register = () => {
             <div style={{ position: 'relative' }}>
               <Lock size={17} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
               <input 
-                type="password" 
+                type={showPassword ? "text" : "password"} 
                 name="password"
                 className="input-field" 
-                style={{ paddingLeft: '2.75rem' }}
+                style={{ paddingLeft: '2.75rem', paddingRight: '2.75rem' }}
                 placeholder="Create a strong password"
                 value={formData.password}
                 onChange={handleChange}
                 required
               />
+              <button 
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', padding: 0 }}
+              >
+                {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+              </button>
             </div>
           </div>
 
-          <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1.25rem', padding: '0.85rem' }} disabled={isLoading}>
+          <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1.25rem', padding: '0.85rem', background: '#0d2233', border: '1px solid rgba(110, 231, 183, 0.2)', color: '#ffffff' }} disabled={isLoading}>
             {isLoading ? 'Creating Account...' : 'Create Account'}
           </button>
         </form>

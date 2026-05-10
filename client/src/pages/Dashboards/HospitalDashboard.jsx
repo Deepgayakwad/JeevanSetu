@@ -5,6 +5,7 @@ import {
   AlertTriangle, ChevronRight, Stethoscope, RefreshCw, X
 } from 'lucide-react';
 import api from '../../services/api';
+import { ChromaGrid, ChromaCard } from '../../components/ChromaGrid';
 
 const statusColors = {
   proposed:  { bg: 'var(--primary-light)',   color: 'var(--primary)'   },
@@ -141,9 +142,9 @@ const HospitalDashboard = () => {
                   <p style={{ color: 'var(--text-muted)' }}>No pending donor verifications. All caught up! ✅</p>
                 </div>
               ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.25rem' }}>
+                <ChromaGrid columns={3}>
                   {pendingDonors.map(donor => (
-                    <div key={donor._id} className="glass-panel" style={{ padding: '1.5rem' }}>
+                    <ChromaCard key={donor._id} borderColor="rgba(239, 68, 68, 0.5)" gradient="linear-gradient(145deg, rgba(239, 68, 68, 0.1), rgba(0,0,0,0.5))">
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
                         <div>
                           <h3 style={{ fontSize: '1.05rem', marginBottom: '0.25rem' }}>{donor.user?.name}</h3>
@@ -209,9 +210,9 @@ const HospitalDashboard = () => {
                           {verifyLoading === donor._id ? 'Processing…' : 'Approve Profile'}
                         </button>
                       </div>
-                    </div>
+                    </ChromaCard>
                   ))}
-                </div>
+                </ChromaGrid>
               )}
             </div>
           )}

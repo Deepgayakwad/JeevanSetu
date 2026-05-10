@@ -1,0 +1,136 @@
+/* ── ChromaGrid: Spotlight overlay grid ─────────────────────────── */
+
+.chroma-grid {
+  position: relative;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));
+  grid-auto-rows: auto;
+  gap: 1.25rem;
+  padding: 0.5rem;
+  box-sizing: border-box;
+
+  --x: 50%;
+  --y: 50%;
+  --r: 300px;
+}
+
+@media (max-width: 1024px) {
+  .chroma-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .chroma-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Card ──────────────────────────────────────────────────────────── */
+.chroma-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background-color: #0c2233;
+  background: var(--card-gradient, linear-gradient(145deg, #0c2233, #0d3347));
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+
+  --mouse-x: 50%;
+  --mouse-y: 50%;
+  --spotlight-color: rgba(255, 255, 255, 0.0);
+}
+
+/* Spotlight disabled */
+.chroma-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 2;
+}
+
+/* ── Content wrapper (above spotlight) ─────────────────────────────── */
+.chroma-content-wrapper {
+  position: relative;
+  z-index: 3;
+  flex: 1;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Spotlight overlay (follows mouse across whole grid) ───────────── */
+.chroma-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+  backdrop-filter: grayscale(1) brightness(0.78);
+  -webkit-backdrop-filter: grayscale(1) brightness(0.78);
+  background: rgba(0, 0, 0, 0.001);
+
+  mask-image: radial-gradient(
+    circle var(--r) at var(--x) var(--y),
+    transparent 0%,
+    transparent 15%,
+    rgba(0, 0, 0, 0.1) 30%,
+    rgba(0, 0, 0, 0.22) 45%,
+    rgba(0, 0, 0, 0.35) 60%,
+    rgba(0, 0, 0, 0.5) 75%,
+    rgba(0, 0, 0, 0.68) 88%,
+    white 100%
+  );
+  -webkit-mask-image: radial-gradient(
+    circle var(--r) at var(--x) var(--y),
+    transparent 0%,
+    transparent 15%,
+    rgba(0, 0, 0, 0.1) 30%,
+    rgba(0, 0, 0, 0.22) 45%,
+    rgba(0, 0, 0, 0.35) 60%,
+    rgba(0, 0, 0, 0.5) 75%,
+    rgba(0, 0, 0, 0.68) 88%,
+    white 100%
+  );
+}
+
+/* ── Fade layer (shown when mouse leaves) ──────────────────────────── */
+.chroma-fade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 11;
+  backdrop-filter: grayscale(1) brightness(0.78);
+  -webkit-backdrop-filter: grayscale(1) brightness(0.78);
+  background: rgba(0, 0, 0, 0.001);
+
+  mask-image: radial-gradient(
+    circle var(--r) at var(--x) var(--y),
+    white 0%,
+    white 15%,
+    rgba(255, 255, 255, 0.9) 30%,
+    rgba(255, 255, 255, 0.78) 45%,
+    rgba(255, 255, 255, 0.65) 60%,
+    rgba(255, 255, 255, 0.5) 75%,
+    rgba(255, 255, 255, 0.32) 88%,
+    transparent 100%
+  );
+  -webkit-mask-image: radial-gradient(
+    circle var(--r) at var(--x) var(--y),
+    white 0%,
+    white 15%,
+    rgba(255, 255, 255, 0.9) 30%,
+    rgba(255, 255, 255, 0.78) 45%,
+    rgba(255, 255, 255, 0.65) 60%,
+    rgba(255, 255, 255, 0.5) 75%,
+    rgba(255, 255, 255, 0.32) 88%,
+    transparent 100%
+  );
+
+  opacity: 1;
+  transition: opacity 0.25s ease;
+}

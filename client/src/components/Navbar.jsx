@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { io } from 'socket.io-client';
-import { Heart, User, LogOut, MessageSquare, Activity, Bell, X, CheckCheck, Clock } from 'lucide-react';
+import { Heart, User, LogOut, MessageSquare, Activity, Bell, X, CheckCheck, Clock, Home } from 'lucide-react';
 import './Navbar.css';
 import api from '../services/api';
 
@@ -110,13 +110,17 @@ const Navbar = () => {
     <nav className="navbar glass-panel">
       <div className="navbar-container">
         <Link to="/" className="navbar-logo">
-          <Heart className="logo-icon" size={28} fill="#db834d" color="#db834d" />
-          <span style={{ color: '#db834d' }}>JeevanSetu</span>
+          <Heart className="logo-icon" size={28} />
+          <span>JeevanSetu</span>
         </Link>
 
         <div className="navbar-links">
           {user ? (
             <>
+              <Link to="/" className="nav-item">
+                <Home size={20} />
+                <span>Home</span>
+              </Link>
               <Link to={getDashboardLink()} className="nav-item">
                 <Activity size={20} />
                 <span>Dashboard</span>
@@ -155,22 +159,23 @@ const Navbar = () => {
                   <div style={{
                     position: 'absolute', top: 'calc(100% + 10px)', right: 0,
                     width: '360px', maxHeight: '420px',
-                    background: 'var(--bg-secondary)',
-                    border: '1px solid var(--border-color)',
+                    background: '#0d2233',
+                    border: '1px solid rgba(110, 231, 183, 0.2)',
                     borderRadius: '16px',
                     boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
                     zIndex: 200,
                     display: 'flex', flexDirection: 'column',
                     overflow: 'hidden',
                     animation: 'fadeIn 0.2s ease',
+                    color: '#ffffff'
                   }}>
                     {/* Header */}
-                    <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <h3 style={{ fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid rgba(110, 231, 183, 0.2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <h3 style={{ fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, color: '#ffffff' }}>
                         <Bell size={16} /> Notifications {unreadCount > 0 && <span style={{ backgroundColor: 'var(--secondary)', color: 'white', fontSize: '0.65rem', padding: '0.1rem 0.4rem', borderRadius: '999px' }}>{unreadCount}</span>}
                       </h3>
                       {unreadCount > 0 && (
-                        <button onClick={handleMarkAllRead} style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <button onClick={handleMarkAllRead} style={{ background: 'none', border: 'none', color: '#6ee7b7', fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                           <CheckCheck size={13} /> Mark all read
                         </button>
                       )}
@@ -179,9 +184,9 @@ const Navbar = () => {
                     {/* List */}
                     <div style={{ overflowY: 'auto', flex: 1 }}>
                       {loadingNotifs ? (
-                        <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>Loading…</div>
+                        <div style={{ padding: '2rem', textAlign: 'center', color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem' }}>Loading…</div>
                       ) : notifications.length === 0 ? (
-                        <div style={{ padding: '2.5rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                        <div style={{ padding: '2.5rem', textAlign: 'center', color: 'rgba(255,255,255,0.7)' }}>
                           <Bell size={28} style={{ opacity: 0.3, marginBottom: '0.5rem' }} />
                           <p style={{ fontSize: '0.875rem' }}>No notifications yet.</p>
                         </div>
@@ -192,9 +197,9 @@ const Navbar = () => {
                             onClick={() => !notif.isRead && handleMarkRead(notif._id)}
                             style={{
                               padding: '0.875rem 1.25rem',
-                              borderBottom: '1px solid var(--border-color)',
+                              borderBottom: '1px solid rgba(110, 231, 183, 0.1)',
                               cursor: notif.isRead ? 'default' : 'pointer',
-                              backgroundColor: notif.isRead ? 'transparent' : 'rgba(59,130,246,0.05)',
+                              backgroundColor: notif.isRead ? 'transparent' : 'rgba(110, 231, 183, 0.08)',
                               display: 'flex', gap: '0.75rem', alignItems: 'flex-start',
                               transition: 'background 0.2s',
                               position: 'relative',
@@ -202,15 +207,15 @@ const Navbar = () => {
                           >
                             <span style={{ fontSize: '1.25rem', flexShrink: 0 }}>{typeIcon(notif.type)}</span>
                             <div style={{ flex: 1, minWidth: 0 }}>
-                              <p style={{ fontWeight: notif.isRead ? 500 : 700, fontSize: '0.9rem', marginBottom: '0.2rem', color: '#000000' }}>{notif.title}</p>
-                              <p style={{ fontSize: '0.85rem', color: '#333333', lineHeight: 1.4 }}>{notif.message}</p>
-                              <p style={{ fontSize: '0.75rem', color: '#666666', marginTop: '0.3rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                              <p style={{ fontWeight: notif.isRead ? 500 : 700, fontSize: '0.9rem', marginBottom: '0.2rem', color: '#ffffff' }}>{notif.title}</p>
+                              <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.4 }}>{notif.message}</p>
+                              <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginTop: '0.3rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                                 <Clock size={11} /> {timeAgo(notif.createdAt)}
                               </p>
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem', flexShrink: 0 }}>
-                              {!notif.isRead && <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--primary)', display: 'inline-block' }} />}
-                              <button onClick={(e) => handleDeleteNotif(e, notif._id)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.15rem' }} title="Dismiss">
+                              {!notif.isRead && <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--secondary)', display: 'inline-block' }} />}
+                              <button onClick={(e) => handleDeleteNotif(e, notif._id)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', padding: '0.15rem' }} title="Dismiss">
                                 <X size={13} />
                               </button>
                             </div>

@@ -264,7 +264,8 @@ const ChatRoom = () => {
           flexDirection: 'column',
           height: '100%',
           overflow: 'hidden',
-          background: '#0F2A33',
+          background: '#0d2233',
+          border: '1px solid rgba(110,231,183,0.15)',
         }}
       >
         {/* Sidebar header */}
@@ -280,7 +281,7 @@ const ChatRoom = () => {
               display: 'flex',
               alignItems: 'center',
               gap: '0.5rem',
-              color: '#c7632e',
+              color: '#ffffff',
             }}
           >
             <MessageSquare size={20} /> Messages
@@ -288,7 +289,7 @@ const ChatRoom = () => {
           <p
             style={{
               fontSize: '0.75rem',
-              color: '#c7632e',
+              color: 'rgba(255,255,255,0.7)',
               marginTop: '0.25rem',
             }}
           >
@@ -367,7 +368,7 @@ const ChatRoom = () => {
                           whiteSpace: 'nowrap',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
-                          color: '#c7632e',
+                          color: '#ffffff',
                         }}
                       >
                         {conv.partner.name}
@@ -391,7 +392,7 @@ const ChatRoom = () => {
                       style={{
                         margin: 0,
                         fontSize: '0.75rem',
-                        color: '#c7632e',
+                        color: 'rgba(255,255,255,0.7)',
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
@@ -416,7 +417,8 @@ const ChatRoom = () => {
           flexDirection: 'column',
           height: '100%',
           overflow: 'hidden',
-          background: '#0F2A33',
+          background: '#0d2233',
+          border: '1px solid rgba(110,231,183,0.15)',
         }}
       >
         {!selectedPartner ? (
@@ -515,7 +517,7 @@ const ChatRoom = () => {
                     marginBottom: '0.15rem',
                   }}
                 >
-                  <h2 style={{ fontSize: '1.05rem', margin: 0, color: '#c7632e' }}>
+                  <h2 style={{ fontSize: '1.05rem', margin: 0, color: '#ffffff' }}>
                     {selectedPartner.name}
                   </h2>
                   {rolePill(selectedPartner.role)}
@@ -612,7 +614,7 @@ const ChatRoom = () => {
                         <p
                           style={{
                             fontSize: '0.72rem',
-                            color: '#c7632e',
+                            color: 'rgba(255,255,255,0.8)',
                             marginBottom: '0.2rem',
                             marginLeft: '0.5rem',
                             fontWeight: 600,
@@ -710,7 +712,7 @@ const ChatRoom = () => {
                   type="text"
                   className="input-field"
                   placeholder={`Message ${selectedPartner.name}…`}
-                  style={{ flex: 1, backgroundColor: '#EAF4FF', color: '#1A1A1A', border: '1px solid rgba(47,128,237,0.3)' }}
+                  style={{ flex: 1, backgroundColor: '#0d2233', color: '#ffffff', border: '1px solid rgba(110, 231, 183, 0.2)' }}
                   value={newMessage}
                   onChange={handleTypingChange}
                   onKeyDown={handleKeyDown}

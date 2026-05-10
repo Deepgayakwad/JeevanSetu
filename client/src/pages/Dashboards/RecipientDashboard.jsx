@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
   Activity, Search, AlertTriangle, FileText, Heart, MapPin,
@@ -7,6 +8,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { io } from 'socket.io-client';
+
 
 const SOCKET_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
@@ -33,12 +35,12 @@ const statusBadge = (status) => {
 // ── Overlay Modal ─────────────────────────────────────────────────────────────
 const Modal = ({ show, onClose, children }) => {
   if (!show) return null;
-  return (
+  return createPortal(
     <div
       onClick={onClose}
       style={{
-        position: 'fixed', inset: 0, zIndex: 1000,
-        backgroundColor: 'rgba(28, 28, 28, 0.45)', backdropFilter: 'blur(6px)',
+        position: 'fixed', inset: 0, zIndex: 99999,
+        backgroundColor: 'rgba(10, 10, 10, 0.75)', backdropFilter: 'blur(8px)',
         display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem',
       }}
     >
@@ -46,7 +48,7 @@ const Modal = ({ show, onClose, children }) => {
         onClick={e => e.stopPropagation()}
         className="glass-panel"
         style={{
-          width: '100%', maxWidth: '600px', padding: '2rem',
+          width: '100%', maxWidth: '550px', padding: '1.5rem',
           maxHeight: '90vh', overflowY: 'auto',
           border: '1px solid var(--border-light)',
           animation: 'fadeIn 0.25s ease',
@@ -54,7 +56,8 @@ const Modal = ({ show, onClose, children }) => {
       >
         {children}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
@@ -221,15 +224,15 @@ const RecipientDashboard = () => {
 
       {/* ── Stats ── */}
       <div className="dashboard-grid">
-        <div className="stat-card glass-panel">
+        <div className="stat-card glass-panel" style={{ background: '#0d2233', border: '1px solid rgba(110,231,183,0.15)' }}>
           <div className="stat-icon"><FileText size={24} /></div>
           <div className="stat-details"><h3>{requests.length}</h3><p>Total Requests</p></div>
         </div>
-        <div className="stat-card glass-panel">
+        <div className="stat-card glass-panel" style={{ background: '#0d2233', border: '1px solid rgba(110,231,183,0.15)' }}>
           <div className="stat-icon red"><AlertTriangle size={24} /></div>
           <div className="stat-details"><h3>{requests.filter(r => r.urgencyLevel === 'critical').length}</h3><p>Critical Requests</p></div>
         </div>
-        <div className="stat-card glass-panel">
+        <div className="stat-card glass-panel" style={{ background: '#0d2233', border: '1px solid rgba(110,231,183,0.15)' }}>
           <div className="stat-icon green"><Search size={24} /></div>
           <div className="stat-details"><h3>{availableDonors.length}</h3><p>Available Donors</p></div>
         </div>
@@ -247,7 +250,7 @@ const RecipientDashboard = () => {
               {requests.map(req => {
                 const badge = statusBadge(req.status);
                 return (
-                  <div key={req._id} className="glass-panel" style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
+                  <div key={req._id} className="glass-panel" style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', background: '#0d2233', border: '1px solid rgba(110,231,183,0.15)' }}>
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
                         <Heart size={18} color={urgencyColor(req.urgencyLevel)} />
@@ -310,52 +313,38 @@ const RecipientDashboard = () => {
                 <span style={{ color: '#10b981', fontWeight: 600, fontSize: '0.85rem' }}>Live Radar Active</span>
               </div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.25rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
               {matchedVerifiedDonors.map(donor => (
-                <div key={donor._id} className="glass-panel" style={{ padding: '1.5rem', position: 'relative', overflow: 'hidden' }}>
-                  <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(90deg, var(--secondary), var(--primary))' }} />
-                  
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                <div key={donor._id} style={{ background: '#0d2233', border: '1px solid rgba(110, 231, 183, 0.2)', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div>
                       <h3 style={{ fontSize: '1.1rem', marginBottom: '0.25rem', color: '#e37c14' }}>{donor.user?.name}</h3>
-                      <p style={{ color: 'green', fontSize: '0.85rem' }}>📍 {donor.city}, {donor.state}</p>
+                      <p style={{ color: 'red', fontWeight: 700, fontSize: '0.9rem' }}>Blood Group: {donor.bloodGroup}</p>
+                      <p style={{ color: '#6ee7b7', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}><MapPin size={13} /> {donor.city}, {donor.state}</p>
                     </div>
-                    <span style={{ padding: '0.3rem 0.6rem', backgroundColor: 'var(--secondary-light)', color: 'var(--secondary)', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                    <span style={{ padding: '0.25rem 0.6rem', backgroundColor: 'var(--secondary-light)', color: 'var(--secondary)', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem', whiteSpace: 'nowrap' }}>
                       <CheckCircle2 size={12} /> Verified
                     </span>
                   </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
-                    <div style={{ backgroundColor: 'rgba(255,255,255,0.03)', padding: '0.75rem', borderRadius: '8px' }}>
-                      <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '0.2rem' }}>Blood Group</p>
-                      <p style={{ fontWeight: 700, color: 'red', fontSize: '1.1rem' }}>{donor.bloodGroup}</p>
-                    </div>
-                    <div style={{ backgroundColor: 'var(--bg-main)', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-light)' }}>
-                      <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '0.2rem' }}>Age</p>
-                      <p style={{ fontWeight: 600 }}>{donor.age} yrs</p>
-                    </div>
-                  </div>
-
-                  <div style={{ marginBottom: '1.25rem' }}>
-                    <p style={{ color: '#000000', fontSize: '0.75rem', marginBottom: '0.4rem' }}>Pledged Organs:</p>
+                  <div>
+                    <p style={{ color: '#ffffff', fontSize: '0.8rem', marginBottom: '0.4rem' }}>Pledged Organs:</p>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
                       {donor.organs?.map(o => (
-                        <span key={o} style={{ backgroundColor: '#e0ad7c', color: '#000000', padding: '0.25rem 0.6rem', borderRadius: '999px', fontSize: '0.75rem', textTransform: 'capitalize', fontWeight: 500 }}>
-                          {o}
+                        <span key={o} style={{ backgroundColor: 'rgba(110,231,183,0.15)', color: '#6ee7b7', border: '1px solid rgba(110,231,183,0.3)', padding: '0.2rem 0.6rem', borderRadius: '999px', fontSize: '0.75rem', textTransform: 'capitalize', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                          <Heart size={11} /> {o}
                         </span>
                       ))}
                     </div>
                   </div>
-
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button onClick={() => handleMessageDonor(donor.user)} className="btn btn-primary" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem', padding: '0.6rem' }}>
-                      <MessageSquare size={16} /> Contact
-                    </button>
-                    {donor.donorCardUrl && (
-                      <button onClick={() => handleDownloadDonorCard(donor._id, donor.user?.name)} disabled={downloadingCardId === donor._id} className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.6rem 0.75rem' }} title="Download Donor Card">
-                        <Download size={18} />
+                  <div style={{ display: 'flex', gap: '0.75rem', marginTop: 'auto' }}>
+                    {donor.user && (
+                      <button onClick={() => handleMessageDonor(donor.user)} className="btn btn-primary" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', padding: '0.6rem', background: '#0d2233', border: '1px solid rgba(110, 231, 183, 0.2)' }}>
+                        <MessageSquare size={16} /> Message
                       </button>
                     )}
+                    <button onClick={() => handleDownloadDonorCard(donor._id, donor.user?.name)} disabled={downloadingCardId === donor._id} className="btn btn-primary" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', padding: '0.6rem', background: '#0d2233', border: '1px solid rgba(110, 231, 183, 0.2)' }}>
+                      <Download size={16} /> {downloadingCardId === donor._id ? '...' : 'Card'}
+                    </button>
                   </div>
                 </div>
               ))}
@@ -376,7 +365,7 @@ const RecipientDashboard = () => {
           <h2 style={{ marginBottom: '1rem' }}>Available Donors & Pledged Organs</h2>
 
           {/* Search Bar */}
-          <div className="glass-panel" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
+          <div className="glass-panel" style={{ padding: '1.5rem', marginBottom: '1.5rem', background: '#0d2233', border: '1px solid rgba(110,231,183,0.15)' }}>
             <form onSubmit={handleSearch} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', alignItems: 'end' }}>
               <div className="input-group" style={{ marginBottom: 0 }}>
                 <label className="input-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Heart size={14} /> Organ</label>
@@ -410,49 +399,36 @@ const RecipientDashboard = () => {
           </div>
 
           {availableDonors.length > 0 ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
               {availableDonors.map(donor => (
-                <div key={donor._id} className="glass-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                <div key={donor._id} style={{ background: '#0d2233', border: '1px solid rgba(110, 231, 183, 0.15)', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div>
                       <h3 style={{ fontSize: '1.1rem', marginBottom: '0.25rem', color: '#e37c14' }}>{donor.user?.name || 'Anonymous Donor'}</h3>
-                      <p style={{ color: 'red', fontWeight: 700, marginBottom: '0.25rem' }}>Blood Group: {donor.bloodGroup}</p>
-                      <p style={{ color: 'green', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                        <MapPin size={13} /> {donor.city}, {donor.state}
-                      </p>
+                      <p style={{ color: 'red', fontWeight: 700, fontSize: '0.9rem' }}>Blood Group: {donor.bloodGroup}</p>
+                      <p style={{ color: '#6ee7b7', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}><MapPin size={13} /> {donor.city}, {donor.state}</p>
                     </div>
-                    <span style={{ padding: '0.25rem 0.6rem', borderRadius: '999px', fontSize: '0.7rem', fontWeight: 600, backgroundColor: 'var(--secondary-light)', color: 'var(--secondary)', border: '1px solid rgba(39,174,96,0.3)' }}>
+                    <span style={{ padding: '0.25rem 0.6rem', borderRadius: '999px', fontSize: '0.7rem', fontWeight: 600, backgroundColor: 'var(--secondary-light)', color: 'var(--secondary)', border: '1px solid rgba(39,174,96,0.3)', whiteSpace: 'nowrap' }}>
                       <CheckCircle2 size={11} style={{ display: 'inline', marginRight: '0.25rem' }} />Active
                     </span>
                   </div>
-
-                  <div style={{ marginBottom: '1.25rem' }}>
-                    <p style={{ fontSize: '0.8rem', color: '#000000', marginBottom: '0.5rem' }}>Pledged Organs:</p>
+                  <div>
+                    <p style={{ fontSize: '0.8rem', color: '#ffffff', marginBottom: '0.5rem' }}>Pledged Organs:</p>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                       {donor.organs.map(organ => (
-                        <span key={organ} style={{ backgroundColor: '#e0ad7c', border: 'none', color: '#000000', padding: '0.2rem 0.65rem', borderRadius: '999px', fontSize: '0.78rem', textTransform: 'capitalize', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                        <span key={organ} style={{ backgroundColor: 'rgba(110,231,183,0.15)', color: '#6ee7b7', border: '1px solid rgba(110,231,183,0.3)', padding: '0.2rem 0.65rem', borderRadius: '999px', fontSize: '0.78rem', textTransform: 'capitalize', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                           <Heart size={11} /> {organ}
                         </span>
                       ))}
                     </div>
                   </div>
-
-                  <div style={{ display: 'flex', gap: '0.75rem', marginTop: 'auto', width: '100%' }}>
+                  <div style={{ display: 'flex', gap: '0.75rem', marginTop: 'auto' }}>
                     {donor.user && (
-                      <button
-                        className="btn btn-donor-action"
-                        style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', padding: '0.6rem', backgroundColor: '#e0ad7c', color: '#000000', border: 'none', fontWeight: 700 }}
-                        onClick={() => handleMessageDonor(donor.user)}
-                      >
+                      <button className="btn btn-primary" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', padding: '0.6rem', background: '#0d2233', border: '1px solid rgba(110, 231, 183, 0.2)' }} onClick={() => handleMessageDonor(donor.user)}>
                         <MessageSquare size={16} /> Message
                       </button>
                     )}
-                    <button
-                      className="btn btn-donor-action"
-                      style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', padding: '0.6rem', backgroundColor: '#e0ad7c', color: '#000000', border: 'none', fontWeight: 700 }}
-                      onClick={() => handleDownloadDonorCard(donor._id, donor.user?.name)}
-                      disabled={downloadingCardId === donor._id}
-                    >
+                    <button className="btn btn-primary" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', padding: '0.6rem', background: '#0d2233', border: '1px solid rgba(110, 231, 183, 0.2)' }} onClick={() => handleDownloadDonorCard(donor._id, donor.user?.name)} disabled={downloadingCardId === donor._id}>
                       <Download size={16} /> {downloadingCardId === donor._id ? '...' : 'Card'}
                     </button>
                   </div>
@@ -473,73 +449,73 @@ const RecipientDashboard = () => {
 
       {/* ── Create Request Modal ── */}
       <Modal show={showModal} onClose={() => { setShowModal(false); setFormError(''); }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-          <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Plus size={22} color="var(--secondary)" /> New Organ Request
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
+            <Plus size={20} color="var(--secondary)" /> New Organ Request
           </h2>
-          <button onClick={() => { setShowModal(false); setFormError(''); }} className="btn-logout"><X size={22} /></button>
+          <button onClick={() => { setShowModal(false); setFormError(''); }} className="btn-logout" style={{ padding: '0.2rem' }}><X size={20} /></button>
         </div>
 
         {formError && (
-          <div style={{ padding: '0.875rem 1rem', backgroundColor: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '10px', marginBottom: '1rem', color: '#C0392B', fontSize: '0.875rem' }}>
+          <div style={{ padding: '0.75rem 1rem', backgroundColor: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '10px', marginBottom: '1rem', color: '#C0392B', fontSize: '0.85rem' }}>
             {formError}
           </div>
         )}
 
         <form onSubmit={handleCreateRequest}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <div className="input-group">
-              <label className="input-label">Organ Needed *</label>
-              <select name="organNeeded" value={formData.organNeeded} onChange={handleFormChange} className="input-field" required style={{ appearance: 'none' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+            <div className="input-group" style={{ marginBottom: 0 }}>
+              <label className="input-label" style={{ marginBottom: '0.2rem' }}>Organ Needed *</label>
+              <select name="organNeeded" value={formData.organNeeded} onChange={handleFormChange} className="input-field" required style={{ appearance: 'none', padding: '0.5rem 0.75rem' }}>
                 <option value="">Select Organ</option>
                 {ORGANS.map(o => <option key={o} value={o} style={{ textTransform: 'capitalize' }}>{o.charAt(0).toUpperCase() + o.slice(1)}</option>)}
               </select>
             </div>
-            <div className="input-group">
-              <label className="input-label">Your Blood Group *</label>
-              <select name="bloodGroup" value={formData.bloodGroup} onChange={handleFormChange} className="input-field" required style={{ appearance: 'none' }}>
+            <div className="input-group" style={{ marginBottom: 0 }}>
+              <label className="input-label" style={{ marginBottom: '0.2rem' }}>Your Blood Group *</label>
+              <select name="bloodGroup" value={formData.bloodGroup} onChange={handleFormChange} className="input-field" required style={{ appearance: 'none', padding: '0.5rem 0.75rem' }}>
                 <option value="">Select</option>
                 {BLOOD_GROUPS.map(bg => <option key={bg} value={bg}>{bg}</option>)}
               </select>
             </div>
-            <div className="input-group" style={{ gridColumn: '1 / -1' }}>
-              <label className="input-label">Urgency Level *</label>
-              <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <div className="input-group" style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
+              <label className="input-label" style={{ marginBottom: '0.2rem' }}>Urgency Level *</label>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
                 {URGENCY_LEVELS.map(level => (
-                  <label key={level} style={{ flex: 1, padding: '0.75rem', borderRadius: '10px', cursor: 'pointer', textAlign: 'center', textTransform: 'capitalize', fontWeight: 600, fontSize: '0.875rem', border: `2px solid ${formData.urgencyLevel === level ? urgencyColor(level) : 'var(--border-color)'}`, backgroundColor: formData.urgencyLevel === level ? `${urgencyColor(level)}15` : 'transparent', color: formData.urgencyLevel === level ? urgencyColor(level) : 'var(--text-muted)', transition: 'all 0.2s' }}>
+                  <label key={level} style={{ flex: 1, padding: '0.5rem', borderRadius: '8px', cursor: 'pointer', textAlign: 'center', textTransform: 'capitalize', fontWeight: 600, fontSize: '0.8rem', border: `1px solid ${formData.urgencyLevel === level ? urgencyColor(level) : 'var(--border-color)'}`, backgroundColor: formData.urgencyLevel === level ? `${urgencyColor(level)}15` : 'transparent', color: formData.urgencyLevel === level ? urgencyColor(level) : 'var(--text-muted)', transition: 'all 0.2s' }}>
                     <input type="radio" name="urgencyLevel" value={level} checked={formData.urgencyLevel === level} onChange={handleFormChange} style={{ display: 'none' }} />
                     {level}
                   </label>
                 ))}
               </div>
             </div>
-            <div className="input-group" style={{ gridColumn: '1 / -1' }}>
-              <label className="input-label">Hospital Name *</label>
-              <input name="hospital" type="text" placeholder="e.g. Ruby Hall Clinic" value={formData.hospital} onChange={handleFormChange} className="input-field" required />
+            <div className="input-group" style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
+              <label className="input-label" style={{ marginBottom: '0.2rem' }}>Hospital Name *</label>
+              <input name="hospital" type="text" placeholder="e.g. Ruby Hall Clinic" value={formData.hospital} onChange={handleFormChange} className="input-field" required style={{ padding: '0.5rem 0.75rem' }} />
             </div>
-            <div className="input-group">
-              <label className="input-label">City *</label>
-              <input name="city" type="text" placeholder="e.g. Pune" value={formData.city} onChange={handleFormChange} className="input-field" required />
+            <div className="input-group" style={{ marginBottom: 0 }}>
+              <label className="input-label" style={{ marginBottom: '0.2rem' }}>City *</label>
+              <input name="city" type="text" placeholder="e.g. Pune" value={formData.city} onChange={handleFormChange} className="input-field" required style={{ padding: '0.5rem 0.75rem' }} />
             </div>
-            <div className="input-group">
-              <label className="input-label">State *</label>
-              <input name="state" type="text" placeholder="e.g. Maharashtra" value={formData.state} onChange={handleFormChange} className="input-field" required />
+            <div className="input-group" style={{ marginBottom: 0 }}>
+              <label className="input-label" style={{ marginBottom: '0.2rem' }}>State *</label>
+              <input name="state" type="text" placeholder="e.g. Maharashtra" value={formData.state} onChange={handleFormChange} className="input-field" required style={{ padding: '0.5rem 0.75rem' }} />
             </div>
-            <div className="input-group" style={{ gridColumn: '1 / -1' }}>
-              <label className="input-label">Doctor's Note (optional)</label>
-              <textarea name="doctorNote" rows={2} placeholder="Brief medical note from your doctor..." value={formData.doctorNote} onChange={handleFormChange} className="input-field" style={{ resize: 'vertical' }} />
+            <div className="input-group" style={{ marginBottom: 0 }}>
+              <label className="input-label" style={{ marginBottom: '0.2rem' }}>Doctor's Note (optional)</label>
+              <textarea name="doctorNote" rows={1} placeholder="Brief note..." value={formData.doctorNote} onChange={handleFormChange} className="input-field" style={{ resize: 'vertical', padding: '0.5rem 0.75rem' }} />
             </div>
-            <div className="input-group" style={{ gridColumn: '1 / -1' }}>
-              <label className="input-label">Additional Information (optional)</label>
-              <textarea name="additionalInfo" rows={2} placeholder="Any additional details..." value={formData.additionalInfo} onChange={handleFormChange} className="input-field" style={{ resize: 'vertical' }} />
+            <div className="input-group" style={{ marginBottom: 0 }}>
+              <label className="input-label" style={{ marginBottom: '0.2rem' }}>Additional Info (optional)</label>
+              <textarea name="additionalInfo" rows={1} placeholder="Any details..." value={formData.additionalInfo} onChange={handleFormChange} className="input-field" style={{ resize: 'vertical', padding: '0.5rem 0.75rem' }} />
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
-            <button type="submit" className="btn btn-secondary" style={{ flex: 1 }} disabled={isSubmitting}>
+          <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem' }}>
+            <button type="submit" className="btn btn-secondary" style={{ flex: 1, padding: '0.6rem' }} disabled={isSubmitting}>
               {isSubmitting ? 'Submitting…' : '🚨 Submit Request'}
             </button>
-            <button type="button" className="btn btn-outline" onClick={() => { setShowModal(false); setFormError(''); }}>Cancel</button>
+            <button type="button" className="btn btn-outline" style={{ padding: '0.6rem' }} onClick={() => { setShowModal(false); setFormError(''); }}>Cancel</button>
           </div>
         </form>
       </Modal>

@@ -193,7 +193,7 @@ const DonorDashboard = () => {
       </div>
 
       <div className="dashboard-grid">
-        <div className="stat-card glass-panel">
+        <div className="stat-card glass-panel" style={{ background: '#0d2233', border: '1px solid rgba(110,231,183,0.15)' }}>
           <div className="stat-icon red">
             <Heart size={24} />
           </div>
@@ -203,7 +203,7 @@ const DonorDashboard = () => {
           </div>
         </div>
 
-        <div className="stat-card glass-panel">
+        <div className="stat-card glass-panel" style={{ background: '#0d2233', border: '1px solid rgba(110,231,183,0.15)' }}>
           <div className="stat-icon green">
             <ShieldCheck size={24} />
           </div>
@@ -213,7 +213,7 @@ const DonorDashboard = () => {
           </div>
         </div>
 
-        <div className="stat-card glass-panel">
+        <div className="stat-card glass-panel" style={{ background: '#0d2233', border: '1px solid rgba(110,231,183,0.15)' }}>
           <div className="stat-icon">
             <Clock size={24} />
           </div>
@@ -225,7 +225,7 @@ const DonorDashboard = () => {
       </div>
 
       <div style={{ marginTop: '2rem' }}>
-        <div className="glass-panel" style={{ padding: '1.5rem', position: 'relative' }}>
+        <div className="glass-panel" style={{ padding: '1.5rem', position: 'relative', background: '#0d2233', border: '1px solid rgba(110,231,183,0.15)' }}>
           
           {showProfileForm && (
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'var(--bg-secondary)', borderRadius: '16px', zIndex: 10, padding: '2rem', overflowY: 'auto' }}>
@@ -406,7 +406,7 @@ const DonorDashboard = () => {
                 </div>
               </div>
               
-              <div style={{ gridColumn: '1 / -1', padding: '1.25rem', backgroundColor: 'var(--bg-main)', borderRadius: '12px', border: '1px solid var(--border-light)' }}>
+              <div style={{ gridColumn: '1 / -1', padding: '1.25rem', backgroundColor: '#0d2233', borderRadius: '12px', border: '1px solid rgba(110,231,183,0.15)' }}>
                   <p className="input-label" style={{ marginBottom: '0.25rem' }}>Verification Status</p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
                     {profile.isVerified ? (
